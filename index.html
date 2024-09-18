@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookmarks</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #bookmarkForm { margin-bottom: 20px; }
+        #bookmarkList { list-style-type: none; padding: 0; }
+        .bookmark { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>My Bookmarks</h1>
+    <form id="bookmarkForm">
+        <input type="text" id="bookmarkTitle" placeholder="Title" required>
+        <input type="url" id="bookmarkUrl" placeholder="URL" required>
+        <button type="submit">Add Bookmark</button>
+    </form>
+    <ul id="bookmarkList"></ul>
+    <script src="script.js"></script>
+</body>
+</html>
