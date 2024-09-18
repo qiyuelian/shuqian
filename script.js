@@ -13,12 +13,8 @@ function loadBookmarks() {
 }
 
 function saveBookmarks() {
-    const json = JSON.stringify(bookmarks);
-    // In a real app, you'd send this to a server or API
-    console.log('Bookmarks saved:', json);
-    // For demo purposes, we'll just update the file in the repo
-    // This won't actually work in the browser, it's just to show the concept
-    // You'd need to implement a server-side solution to actually update the file
+    localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+    renderBookmarks();
 }
 
 function renderBookmarks() {
@@ -26,10 +22,12 @@ function renderBookmarks() {
     list.innerHTML = '';
     bookmarks.forEach((bookmark, index) => {
         const li = document.createElement('li');
-        li.className = 'bookmark';
+        li.className = 'bg-white shadow-md rounded-md p-4';
         li.innerHTML = `
-            <a href="${bookmark.url}" target="_blank">${bookmark.title}</a>
-            <button onclick="deleteBookmark(${index})">Delete</button>
+            <div class="flex justify-between items-center">
+                <a href="${bookmark.url}" target="_blank" class="text-blue-600 hover:underline">${bookmark.title}</a>
+                <button onclick="deleteBookmark(${index})" class="text-red-500 hover:text-red-700">Delete</button>
+            </div>
         `;
         list.appendChild(li);
     });
@@ -41,15 +39,56 @@ function addBookmark(event) {
     const url = document.getElementById('bookmarkUrl').value;
     bookmarks.push({ title, url });
     saveBookmarks();
-    renderBookmarks();
     event.target.reset();
 }
 
 function deleteBookmark(index) {
     bookmarks.splice(index, 1);
     saveBookmarks();
-    renderBookmarks();
+}
+
+function backupToGitHub() {
+    const token = prompt("Please enter your GitHub personal access token:");
+    if (!token) return;
+
+    const content = btoa(JSON.stringify(bookmarks, null, 2));
+    const date = new Date().toISOString().split('T')[0];
+    const commitMessage = `Backup bookmarks ${date}`;
+
+    fetch('https://api.github.com/repos/你的用户名/你的仓库名/contents/bookmarks.json', {
+        method: 'PUT',
+        headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: commitMessage,
+            content: content,
+            sha: '', // 如果文件已存在，你需要提供当前文件的SHA
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.content) {
+            alert('Backup successful!');
+        } else {
+            alert('Backup failed. Please check your token and try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred during backup. Please try again.');
+    });
 }
 
 document.getElementById('bookmarkForm').addEventListener('submit', addBookmark);
-loadBookmarks();
+document.getElementById('backupButton').addEventListener('click', backupToGitHub);
+
+// Load bookmarks from localStorage on page load
+const savedBookmarks = localStorage.getItem('bookmarks');
+if (savedBookmarks) {
+    bookmarks = JSON.parse(savedBookmarks);
+    renderBookmarks();
+} else {
+    loadBookmarks();
+}
