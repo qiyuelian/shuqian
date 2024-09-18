@@ -48,31 +48,19 @@ function deleteBookmark(index) {
 }
 
 function backupToGitHub() {
-    const token = prompt("Please enter your GitHub personal access token:");
-    if (!token) return;
-
-    const content = btoa(JSON.stringify(bookmarks, null, 2));
-    const date = new Date().toISOString().split('T')[0];
-    const commitMessage = `Backup bookmarks ${date}`;
-
-    fetch('https://api.github.com/repos/你的用户名/你的仓库名/contents/bookmarks.json', {
-        method: 'PUT',
+    fetch('https://your-worker-url.workers.dev', {
+        method: 'POST',
         headers: {
-            'Authorization': `token ${token}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            message: commitMessage,
-            content: content,
-            sha: '', // 如果文件已存在，你需要提供当前文件的SHA
-        })
+        body: JSON.stringify({ bookmarks })
     })
     .then(response => response.json())
     .then(data => {
-        if (data.content) {
+        if (data.success) {
             alert('Backup successful!');
         } else {
-            alert('Backup failed. Please check your token and try again.');
+            alert('Backup failed. Please try again.');
         }
     })
     .catch(error => {
